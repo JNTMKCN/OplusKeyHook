@@ -1,4 +1,4 @@
-package me.siowu.OplusKeyHook;
+package me.siowu.OplusKeyHook.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;

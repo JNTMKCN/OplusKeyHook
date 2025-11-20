@@ -6,6 +6,8 @@ import android.widget.*;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import me.siowu.OplusKeyHook.utils.SPUtils;
+
 public class MainActivity extends AppCompatActivity {
 
     private Spinner spinnerGesture, spinnerType, spinnerCommon;
