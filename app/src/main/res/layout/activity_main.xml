@@ -5,110 +5,131 @@
     android:padding="20dp">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
         <TextView
-            android:text="选择快捷键功能"
-            android:textSize="16sp"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="32dp"
             android:layout_marginBottom="8dp"
+            android:textSize="16sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:text="选择事件类型" />
+
+        <Spinner
+            android:id="@+id/spinnerGesture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:text="选择快捷键功能"
+            android:textSize="16sp" />
 
         <Spinner
             android:id="@+id/spinnerType"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content" />
 
         <!-- 常用功能选择 -->
         <LinearLayout
             android:id="@+id/layoutCommon"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginTop="16dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
             <TextView
-                android:text="选择常用功能"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="选择常用功能" />
+
             <Spinner
                 android:id="@+id/spinnerCommon"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content" />
         </LinearLayout>
 
         <!-- 自定义 Activity -->
         <LinearLayout
             android:id="@+id/layoutCustomActivity"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginTop="16dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
             <TextView
-                android:text="包名"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="包名" />
+
             <EditText
                 android:id="@+id/editPackage"
-                android:hint="例如：com.tencent.mm"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:hint="例如：com.coolapk.market" />
+
             <TextView
-                android:text="Activity"
-                android:layout_marginTop="8dp"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Activity" />
+
             <EditText
                 android:id="@+id/editActivity"
-                android:hint="例如：.app.TermuxActivity"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:hint="例如：com.coolapk.market.view.search.SuperSearchActivity" />
         </LinearLayout>
 
         <!-- 自定义 URL Scheme -->
         <LinearLayout
             android:id="@+id/layoutUrlScheme"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginTop="16dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
             <TextView
-                android:text="URL Scheme"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:text="URL Scheme" />
+
             <EditText
                 android:id="@+id/editUrlScheme"
-                android:hint="例如：weixin://"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:hint="例如：weixin://" />
         </LinearLayout>
 
         <CheckBox
             android:id="@+id/checkboxVibrate"
-            android:text="是否震动反馈（亮屏时）"
-            android:layout_marginTop="20dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true" />
+            android:layout_marginTop="20dp"
+            android:checked="true"
+            android:text="是否震动反馈（亮屏时）" />
 
         <CheckBox
             android:id="@+id/checkboxExecuteWhenScreenOff"
-            android:text="息屏状态下是否执行操作"
-            android:layout_marginTop="0dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:checked="true" />
+            android:layout_marginTop="0dp"
+            android:checked="true"
+            android:text="息屏状态下是否执行操作" />
 
         <Button
             android:id="@+id/btnSave"
-            android:text="保存设置"
-            android:layout_marginTop="24dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="保存设置" />
     </LinearLayout>
 </ScrollView>

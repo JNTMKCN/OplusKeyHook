@@ -3,6 +3,7 @@ package me.siowu.OplusKeyHook;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import de.robv.android.xposed.*;
@@ -10,6 +11,13 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 public class MainHook implements IXposedHookLoadPackage {
     XSharedPreferences sp = null;
+    private long lastDownTime = 0;
+    private long lastUpTime = 0;
+    private int clickCount = 0;
+    private boolean isLongPress = false;
+    private static final long DOUBLE_CLICK_DELAY = 250;
+    private static final long LONG_PRESS_TIME = 495;
+
     @Override
     public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         if (!"android".equals(lpparam.packageName)) return; // 只 Hook 系统进程
@@ -36,27 +44,67 @@ public class MainHook implements IXposedHookLoadPackage {
                             boolean down = (boolean) param.args[3];
                             boolean interactive = (boolean) param.args[4]; // 屏幕状态：true=亮屏，false=熄屏
                             Object currentStrategy = param.thisObject;
-                            // 快捷键780：打开微信扫一扫（和负一屏逻辑一致）
-                            if (keyCode == 780 && down && event.getAction() == KeyEvent.ACTION_DOWN) {
-                                XposedBridge.log("快捷键拦截成功");
-                                sp.reload();
-                                if (interactive) {
-                                    XposedBridge.log("当前屏幕是亮屏状态");
-                                    if(sp.getBoolean("vibrate_on_press",true)){
-                                        XposedHelpers.callMethod(currentStrategy, "longPressStartVibrate");
-                                    }
-                                    doAction();
-                                }else{
-                                    XposedBridge.log("当前屏幕是息屏状态");
-                                    if(sp.getBoolean("execute_when_screen_off",true)){
-                                        XposedHelpers.callMethod(currentStrategy, "wakeup");
-                                        doAction();
-                                    }else {
-                                        XposedBridge.log("根据配置设定 不执行操作");
-                                    }
+
+                            if (keyCode == 780) {
+                                long now = System.currentTimeMillis();
+                                // 🔽=== 按下事件 ACTION_DOWN ===🔽
+                                if (event.getAction() == KeyEvent.ACTION_DOWN && down) {
+                                    lastDownTime = now;
+                                    isLongPress = false;
+                                    // 启动一个判定长按的线程
+                                    new Thread(() -> {
+                                        try {
+                                            Thread.sleep(LONG_PRESS_TIME);
+                                            // 若超过495ms仍未抬起，则判定为长按
+                                            if (lastUpTime < lastDownTime && !isLongPress) {
+                                                isLongPress = true;
+                                                XposedBridge.log("触发长按事件");
+                                                handleClick("long_", interactive, currentStrategy);
+                                            }
+                                        } catch (Exception ignored) {
+                                        }
+                                    }).start();
+
+                                    param.setResult(null);
+                                    return;
                                 }
-                                param.setResult(null);
+
+                                // 🔼=== 抬起事件 ACTION_UP ===🔼
+                                if (event.getAction() == KeyEvent.ACTION_UP && !down) {
+                                    lastUpTime = now;
+                                    // 如果已被长按消耗，不处理短按和双击
+                                    if (isLongPress) {
+                                        param.setResult(null);
+                                        return;
+                                    }
+                                    clickCount++;
+
+                                    // 判断双击
+                                    if (clickCount == 2 && (now - lastDownTime) < DOUBLE_CLICK_DELAY) {
+                                        XposedBridge.log("触发双击事件");
+                                        handleClick("double_", interactive, currentStrategy);
+                                        clickCount = 0;
+                                        param.setResult(null);
+                                        return;
+                                    }
+
+                                    // 如果 250ms 内没有第二次点击，判定为短按
+                                    new Thread(() -> {
+                                        try {
+                                            Thread.sleep(DOUBLE_CLICK_DELAY);
+                                            if (clickCount == 1 && !isLongPress) {
+                                                XposedBridge.log("触发短按事件");
+                                                handleClick("single_", interactive, currentStrategy);
+                                            }
+                                            clickCount = 0;
+                                        } catch (Exception ignored) {
+                                        }
+                                    }).start();
+                                    param.setResult(null);
+                                }
                             }
+
+
                         }
                     });
         } catch (Throwable t) {
@@ -64,31 +112,50 @@ public class MainHook implements IXposedHookLoadPackage {
         }
     }
 
-    public void doAction() {
+    public void handleClick(String prefix, boolean interactive, Object currentStrategy) {
+        sp.reload();
+        if (interactive) {
+            XposedBridge.log("当前屏幕是亮屏状态");
+            if (sp.getBoolean(prefix + "vibrate", true)) {
+                XposedHelpers.callMethod(currentStrategy, "longPressStartVibrate");
+            }
+            doAction(prefix);
+        } else {
+            XposedBridge.log("当前屏幕是息屏状态");
+            if (sp.getBoolean(prefix + "screen_off", true)) {
+                XposedHelpers.callMethod(currentStrategy, "wakeup");
+                doAction(prefix);
+            } else {
+                XposedBridge.log("根据配置设定 不执行操作");
+            }
+        }
+    }
+
+    public void doAction(String prefix) {
         XposedBridge.log("开始执行快捷键操作");
         sp.reload();
-        String type = sp.getString("type", "");
+        String type = sp.getString(prefix + "type", "");
         XposedBridge.log("当前快捷键类型: " + type);
         switch (type) {
             case "无":
                 XposedBridge.log("不执行任何操作");
                 break;
             case "常用":
-                doCommonAction();
+                doCommonAction(prefix);
                 break;
             case "自定义Activity":
-                doCustomActivity();
+                doCustomActivity(prefix);
                 break;
             case "自定义UrlScheme":
-                doCustomUrlScheme();
+                doCustomUrlScheme(prefix);
                 break;
         }
     }
 
 
-    public void doCommonAction() {
+    public void doCommonAction(String prefix) {
         sp.reload();
-        int index = sp.getInt("common_index", 0);
+        int index = sp.getInt(prefix + "common_index", 0);
         XposedBridge.log("当前常用操作索引: " + index);
         switch (index) {
             case 0:
@@ -106,10 +173,10 @@ public class MainHook implements IXposedHookLoadPackage {
         }
     }
 
-    public void doCustomActivity() {
+    public void doCustomActivity(String prefix) {
         sp.reload();
-        String activity = sp.getString("activity", "");
-        String packageName = sp.getString("package", "");
+        String activity = sp.getString(prefix + "activity", "");
+        String packageName = sp.getString(prefix + "package", "");
         if (activity.isEmpty() || packageName.isEmpty()) {
             XposedBridge.log("自定义Activity为空");
             return;
@@ -117,9 +184,9 @@ public class MainHook implements IXposedHookLoadPackage {
         startActivity(packageName, activity);
     }
 
-    public void doCustomUrlScheme() {
+    public void doCustomUrlScheme(String prefix) {
         sp.reload();
-        String scheme = sp.getString("url", "");
+        String scheme = sp.getString(prefix + "url", "");
         if (scheme.isEmpty()) {
             XposedBridge.log("自定义UrlScheme为空");
             return;
@@ -212,10 +279,5 @@ public class MainHook implements IXposedHookLoadPackage {
             XposedBridge.log("startSchemeAsBrowser: failed to start scheme: " + t);
             return false;
         }
-    }
-
-
-    public void shake(){
-
     }
 }
