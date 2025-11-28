@@ -1,5 +1,6 @@
 package me.siowu.OplusKeyHook.hooks;
 
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -163,6 +164,9 @@ public class KeyHook {
                 break;
             case "执行小布快捷指令":
                 doXiaobuShortcuts(prefix);
+                break;
+            case "自定义Shell命令":
+                doCustomShell(prefix);
                 break;
             default:
                 XposedBridge.log("未获取到配置");
@@ -378,5 +382,44 @@ public class KeyHook {
             XposedBridge.log("triggerFlashMemoryService error: " + t.getMessage());
         }
     }
+
+    private void doCustomShell(String prefix) {
+        sp.reload();
+        String cmd = sp.getString(prefix + "shell", "");
+        if (cmd.isEmpty()) {
+            XposedBridge.log("自定义Shell为空");
+            return;
+        }
+
+        try {
+            // 获取系统上下文
+            Context systemContext = (Context) XposedHelpers.callStaticMethod(
+                    XposedHelpers.findClass("android.app.ActivityThread", null),
+                    "currentApplication"
+            );
+
+            if (systemContext == null) {
+                XposedBridge.log("systemContext 为 null，无法发送广播");
+                return;
+            }
+
+            // *** 显式广播：直接指定组件 ***
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName(
+                    "me.siowu.OplusKeyHook",
+                    "me.siowu.OplusKeyHook.utils.ShellReceiver"
+            ));
+            intent.putExtra("cmd", cmd);
+
+            // 发送广播（不需要 action，不会被过滤）
+            systemContext.sendBroadcast(intent);
+
+            XposedBridge.log("已请求 APP 执行 Shell: " + cmd);
+
+        } catch (Throwable t) {
+            XposedBridge.log("发送广播失败: " + Log.getStackTraceString(t));
+        }
+    }
+
 
 }

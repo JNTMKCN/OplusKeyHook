@@ -10,12 +10,12 @@
         android:orientation="vertical">
 
         <TextView
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="8dp"
-            android:textSize="16sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="选择事件类型" />
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="8dp"
+            android:text="选择事件类型"
+            android:textSize="16sp" />
 
         <Spinner
             android:id="@+id/spinnerGesture"
@@ -109,7 +109,7 @@
                 android:hint="例如：weixin://" />
         </LinearLayout>
 
-        <!-- 自定义 URL Scheme -->
+        <!-- 快捷指令ID -->
         <LinearLayout
             android:id="@+id/layoutxiaobuShortcuts"
             android:layout_width="match_parent"
@@ -128,6 +128,27 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="抓取ID后，粘贴在这里" />
+        </LinearLayout>
+
+        <!-- 快捷指令ID -->
+        <LinearLayout
+            android:id="@+id/layoutShell"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Shell命令" />
+
+            <EditText
+                android:id="@+id/editShell"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="输入要执行的命令" />
         </LinearLayout>
 
         <CheckBox
