@@ -192,9 +192,15 @@ public class KeyHook {
                 startSchemeAsBrowser("alipays://platformapi/startapp?saId=10000007");
                 break;
             case 4:
-                startFlashMemoryService();
+                startSchemeAsBrowser("upwallet://native/codepay");
                 break;
             case 5:
+                startSchemeAsBrowser("upwallet://native/scanCode");
+                break;
+            case 6:
+                startFlashMemoryService();
+                break;
+            case 7:
                 startActivity("com.oplus.aimemory", "com.oplus.aimemory.MainActivity");
                 break;
         }
